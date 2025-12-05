@@ -1,28 +1,39 @@
-name: CI/CD Pipeline
+# .github/workflows/ci-cd.yml
+name: Test Question Service
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  test:
+  run-tests:
+    name: 🧪 Run Tests
     runs-on: ubuntu-latest
-
+    
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install pytest
-
-    - name: Install project in development mode
-      run: |
-        pip install -e .
-
-    - name: Run tests
-      run: |
-        pytest tests/unit/ -v
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+      
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-mock
+      
+      - name: 🧪 Run unit tests
+        run: |
+          # Просто запускаем - теперь с __init__.py все будет работать
+#          python -m pytest tests/unit/ -v
+          python run_ci_tests.py
+      
+      - name: ✅ Tests completed
+        if: success()
+        run: |
+          echo "✅ Все тесты успешно пройдены! 🎉"
