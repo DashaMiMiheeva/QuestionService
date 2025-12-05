@@ -23,6 +23,9 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - name: Install project
+          run: pip install .
+
       - name: Add project to PYTHONPATH
         run: |
           echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
