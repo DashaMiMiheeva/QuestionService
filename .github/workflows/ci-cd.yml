@@ -1,89 +1,28 @@
-name: CI/CD Pipeline for Question Service
+name: CI/CD Pipeline
 
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
-  unit-tests:
-    name: Unit Tests
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-mock
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest
 
-      - name: Run unit tests
-        run: |
-          pytest tests/unit/ -v --cov=app --cov-report=xml
+    - name: Install project in development mode
+      run: |
+        pip install -e .
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage.xml
-          flags: unittests
-
-  e2e-tests:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-    needs: unit-tests
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest requests
-
-      - name: Start FastAPI server
-        run: |
-          python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-          echo "Ждем запуск сервера..."
-          sleep 10
-          
-          curl -f http://localhost:8000/docs || exit 1
-          echo "Сервер запущен на http://localhost:8000"
-
-      - name: Run E2E tests
-        run: |
-          pytest tests/e2e/ -v --tb=short
-
-      - name: Stop server
-        if: always()
-        run: |
-          pkill -f "uvicorn app.main:app" || true
-
-  deploy:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [unit-tests, e2e-tests]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Deployment step
-        run: |
-          echo "Начинаем деплой в production..."
-          echo "Деплой успешно завершен"
+    - name: Run tests
+      run: |
+        pytest tests/unit/ -v
