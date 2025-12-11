@@ -58,7 +58,7 @@ class TestQuestionService:
             **{**sample_question.model_dump(),
                "status": QuestionStatus.ANSWERED,
                "teacher_id": uuid4(),
-               "answer_text": "Ответ",
+               "answer_text": "Ответ от преподавателя",
                "answered_at": datetime.now()})
         mock_repo.update_answer.return_value = answered_question
         result = service.answer_question(
