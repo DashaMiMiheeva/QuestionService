@@ -3,7 +3,9 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from app.models.question import Question, QuestionStatus, QuestionCreate
 from app.schemas.question import QuestionDB
+import logging
 
+logger = logging.getLogger("question-service.repository")
 
 class QuestionRepository:
     def __init__(self, db: Session):
@@ -14,6 +16,7 @@ class QuestionRepository:
         return Question.model_validate(question) if question else None
 
     def create(self, question: QuestionCreate) -> Question:
+        logger.info("Репозиторий: сохранение вопроса в БД")
         db_question = QuestionDB(
             id=uuid4(),
             title=question.title,
@@ -28,6 +31,7 @@ class QuestionRepository:
         return Question.model_validate(db_question)
 
     def update_answer(self, id: UUID, teacher_id: UUID, answer_text: str) -> Question:
+        logger.info(f"Репозиторий: обновление ответа для вопроса {id}")
         question = self.db.query(QuestionDB).filter(QuestionDB.id == id).first()
         if not question:
             raise ValueError("Question not found")
@@ -42,6 +46,7 @@ class QuestionRepository:
         return Question.model_validate(question)
 
     def close_question(self, id: UUID) -> Question:
+        logger.info(f"Репозиторий: закрытие вопроса {id}")
         question = self.db.query(QuestionDB).filter(QuestionDB.id == id).first()
         if not question:
             raise ValueError("Question not found")
